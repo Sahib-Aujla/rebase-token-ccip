@@ -4,6 +4,20 @@ pragma solidity ^0.8.24;
 import {ERC20} from "@openzepplin/token/ERC20/ERC20.sol";
 
 contract RebaseToken is ERC20 {
+    /////////////////////
+    // Errors ///////////
+    ////////////////////
+    error RebaseToken__NewInterestCanOnlyBeLower();
+
+    ///////////////////////////
+    // Events ////////////////
+    //////////////////////////
+    event InerestRateChange(uint256 oldInterestRate, uint256 newInterestRate);
+
+    ///////////////////////////
+    // Variables //////////////
+    //////////////////////////
+
     uint256 private constant PRECISION = 1e18;
 
     uint256 private s_interestRate;
@@ -12,6 +26,14 @@ contract RebaseToken is ERC20 {
 
     constructor() ERC20("Rebase Token", "RBT") {
         s_interestRate = 5e10;
+    }
+
+    function changeInterestRate(uint256 newInterestRate) external {
+        if (newInterestRate >= s_interestRate) {
+            revert RebaseToken__NewInterestCanOnlyBeLower();
+        }
+        emit InerestRateChange(s_interestRate, newInterestRate);
+        s_interestRate = newInterestRate;
     }
 
     function mint(address _to, uint256 _amount) external {
