@@ -2,8 +2,10 @@
 pragma solidity ^0.8.24;
 
 import {ERC20} from "@openzepplin/token/ERC20/ERC20.sol";
+import {Ownable} from "@openzepplin/access/Ownable.sol";
+import {AccessControl} from "@openzepplin/access/AccessControl.sol";
 
-contract RebaseToken is ERC20 {
+contract RebaseToken is ERC20, Ownable, AccessControl {
     /////////////////////
     // Errors ///////////
     ////////////////////
@@ -19,6 +21,7 @@ contract RebaseToken is ERC20 {
     //////////////////////////
 
     uint256 private constant PRECISION = 1e18;
+    bytes32 public constant MINTER_BURNER_ROLE = keccak256("MINTER_BURNER_ROLE");
 
     uint256 private s_interestRate;
     mapping(address user => uint256 interestRate) private s_interestRates;
@@ -28,7 +31,11 @@ contract RebaseToken is ERC20 {
         s_interestRate = 5e10;
     }
 
-    function changeInterestRate(uint256 newInterestRate) external {
+    function grantRoleMintAndBurn(address account) external onlyOwner {
+        _grantRole(MINTER_BURNER_ROLE, account);
+    }
+
+    function changeInterestRate(uint256 newInterestRate) external onlyOwner {
         if (newInterestRate >= s_interestRate) {
             revert RebaseToken__NewInterestCanOnlyBeLower();
         }
@@ -36,7 +43,7 @@ contract RebaseToken is ERC20 {
         s_interestRate = newInterestRate;
     }
 
-    function mint(address _to, uint256 _amount) external {
+    function mint(address _to, uint256 _amount) external onlyRole(MINTER_BURNER_ROLE) {
         //calculate interest and mint the outstanding tokens to the user
         _mintAccruedInterest(_to);
         s_interestRates[_to] = s_interestRate;
@@ -52,7 +59,7 @@ contract RebaseToken is ERC20 {
         return (currentBalance * _calculateAccruedInterest(to)) / PRECISION;
     }
 
-    function burn(address _from, uint256 _amount) external {
+    function burn(address _from, uint256 _amount) external onlyRole(MINTER_BURNER_ROLE) {
         if (_amount == type(uint256).max) {
             _amount = balanceOf(_from);
         }
