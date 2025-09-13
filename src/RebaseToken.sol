@@ -38,6 +38,10 @@ contract RebaseToken is ERC20 {
         uint256 principalBalance = super.balanceOf(to);
 
         uint256 currentBalance = balanceOf(to);
+
+        uint256 tokensToMint = principalBalance - currentBalance;
+        _mint(to, tokensToMint);
+        s_userLastUpdatedTimestamp[to] = block.timestamp;
     }
 
     function _calculateAccruedInterest(address to) internal view returns (uint256) {
