@@ -15,8 +15,8 @@ contract Vault {
         i_rebaseToken = IRebaseToken(rebaseTokenAddress);
     }
 
-    function deposit(uint256 amount) external payable {
-        i_rebaseToken.mint(msg.sender, amount);
+    function deposit() external payable {
+        i_rebaseToken.mint(msg.sender, msg.value);
         emit Deposit(msg.sender, msg.value);
     }
 
