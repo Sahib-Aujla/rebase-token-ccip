@@ -52,6 +52,14 @@ contract RebaseToken is ERC20 {
         return (currentBalance * _calculateAccruedInterest(to)) / PRECISION;
     }
 
+    function burn(address _from, uint256 _amount) external {
+        if (_amount == type(uint256).max) {
+            _amount = balanceOf(_from);
+        }
+        _mintAccruedInterest(_from);
+        _burn(_from, _amount);
+    }
+
     //////////////////////////////////
     // Internal functions ////////////
     /////////////////////////////////
