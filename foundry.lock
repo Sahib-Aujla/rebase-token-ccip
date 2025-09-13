@@ -4,5 +4,11 @@
       "name": "v1.10.0",
       "rev": "8bbcf6e3f8f62f419e5429a0bd89331c85c37824"
     }
+  },
+  "lib/openzepplin-contracts": {
+    "tag": {
+      "name": "v4.5.0",
+      "rev": "a5445b0afb8b350417b6e6ab3160554967bc151f"
+    }
   }
 }
