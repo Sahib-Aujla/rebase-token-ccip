@@ -60,6 +60,30 @@ contract RebaseToken is ERC20 {
         _burn(_from, _amount);
     }
 
+    function transfer(address to, uint256 amount) public override returns (bool) {
+        _mintAccruedInterest(msg.sender);
+        _mintAccruedInterest(to);
+        if (amount == type(uint256).max) {
+            amount = balanceOf(msg.sender);
+        }
+        if (balanceOf(to) == 0) {
+            s_interestRates[to] = s_interestRates[msg.sender];
+        }
+        return super.transfer(to, amount);
+    }
+
+    function transferFrom(address from, address to, uint256 amount) public override returns (bool) {
+        _mintAccruedInterest(from);
+        _mintAccruedInterest(to);
+        if (amount == type(uint256).max) {
+            amount = balanceOf(from);
+        }
+        if (balanceOf(to) == 0) {
+            s_interestRates[to] = s_interestRates[from];
+        }
+        return super.transferFrom(from, to, amount);
+    }
+
     //////////////////////////////////
     // Internal functions ////////////
     /////////////////////////////////
