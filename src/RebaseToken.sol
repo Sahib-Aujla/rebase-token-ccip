@@ -60,9 +60,9 @@ contract RebaseToken is ERC20, Ownable, AccessControl {
     }
 
     function burn(address _from, uint256 _amount) external onlyRole(MINTER_BURNER_ROLE) {
-        if (_amount == type(uint256).max) {
-            _amount = balanceOf(_from);
-        }
+        // if (_amount == type(uint256).max) {
+        //     _amount = balanceOf(_from);
+        // }
         _mintAccruedInterest(_from);
         _burn(_from, _amount);
     }
@@ -100,7 +100,7 @@ contract RebaseToken is ERC20, Ownable, AccessControl {
 
         uint256 currentBalance = balanceOf(to);
 
-        uint256 tokensToMint = principalBalance - currentBalance;
+        uint256 tokensToMint = currentBalance - principalBalance;
         _mint(to, tokensToMint);
         s_userLastUpdatedTimestamp[to] = block.timestamp;
     }

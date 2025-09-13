@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {console, Test} from "forge-std/Test.sol";
+import {console,console2, Test} from "forge-std/Test.sol";
 
 import {RebaseToken} from "../src/RebaseToken.sol";
 import {Vault} from "../src/Vault.sol";
@@ -76,35 +76,37 @@ contract RebaseTokenTest is Test {
         vm.stopPrank();
     }
 
-    // function testRedeemAfterTimeHasPassed(uint256 depositAmount, uint256 time) public {
-    //     time = bound(time, 1000, type(uint96).max); // this is a crazy number of years - 2^96 seconds is a lot
-    //     depositAmount = bound(depositAmount, 1e5, type(uint96).max); // this is an Ether value of max 2^78 which is crazy
+    function testRedeemAfterTimeHasPassed(uint256 depositAmount, uint256 time) public {
+        uint256 TEN_YEARS = 10 * 365 days;
+        time = bound(time, 1000, TEN_YEARS); // this is a crazy number of years - 2^96 seconds is a lot
+        depositAmount = bound(depositAmount, 1e5, type(uint96).max); // this is an Ether value of max 2^78 which is crazy
 
-    //     // Deposit funds
-    //     vm.deal(user, depositAmount);
-    //     vm.prank(user);
-    //     vault.deposit{value: depositAmount}();
+        // Deposit funds
+        vm.deal(user, depositAmount);
+        vm.prank(user);
+        vault.deposit{value: depositAmount}();
 
-    //     // check the balance has increased after some time has passed
-    //     vm.warp(time);
+        // check the balance has increased after some time has passed
+        vm.warp(time);
 
-    //     // Get balance after time has passed
-    //     uint256 balance = rebaseToken.balanceOf(user);
+        // Get balance after time has passed
+        uint256 balance = rebaseToken.balanceOf(user);
+        console2.log("Balance after time has passed: %d", balance);
 
-    //     // Add rewards to the vault
-    //     vm.deal(owner, balance + depositAmount);
-    //     vm.prank(owner);
-    //     addRewardsToVault(balance + depositAmount);
+        // Add rewards to the vault
+        vm.deal(owner, balance + depositAmount);
+        vm.prank(owner);
+        addRewardsToVault(balance + depositAmount);
 
-    //     // Redeem funds
-    //     vm.prank(user);
-    //     vault.redeem(balance);
+        // Redeem funds
+        vm.prank(user);
+        vault.redeem(balance);
 
-    //     uint256 ethBalance = address(user).balance;
+        uint256 ethBalance = address(user).balance;
 
-    //     assertEq(balance, ethBalance);
-    //     assertGt(balance, depositAmount);
-    // }
+        assertEq(balance, ethBalance);
+        assertGt(balance, depositAmount);
+    }
 
     function testCannotCallMint() public {
         // Deposit funds
