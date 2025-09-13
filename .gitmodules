@@ -6,4 +6,4 @@
 	url = https://github.com/openzepplin/openzepplin-contracts
 [submodule "lib/ccip"]
 	path = lib/ccip
-	url = https://github.com/smartcontractkit/ccip
+	url = https://github.com/smartkitcontracts/ccip

@@ -1,8 +1,8 @@
 {
   "lib/ccip": {
     "tag": {
-      "name": "v2.9.0",
-      "rev": "065ef85b5fa52bb4583ebad9e51c20a977b64e7a"
+      "name": "v2.17.0-ccip1.5.16",
+      "rev": "ae80e255dbe38e0f2536d5a36b0990a7b4d9a0d2"
     }
   },
   "lib/forge-std": {
