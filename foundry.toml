@@ -4,7 +4,7 @@ out = "out"
 libs = ["lib"]
 remappings=["@openzepplin/=lib/openzepplin-contracts/contracts/","@ccip/=lib/ccip/",'@chainlink-local/=lib/chainlink-local/']
 
-rpc_endpoints = { eth = "https://eth-sepolia.g.alchemy.com/v2/mwHkM74gwkO6kdWQKCYBRWdbDUnhZB7E", arb = "https://arb-sepolia.g.alchemy.com/v2/mwHkM74gwkO6kdWQKCYBRWdbDUnhZB7E", zksync = "https://sepolia.era.zksync.dev"}
+rpc_endpoints = { eth = "${SEPOLIA_URL}", arb = "${ARB_SEPOLIA_URL}", zksync = "https://sepolia.era.zksync.dev"}
 
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

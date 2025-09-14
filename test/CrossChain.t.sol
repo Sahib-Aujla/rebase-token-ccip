@@ -21,6 +21,8 @@ contract CrossChain is Test {
     uint256 sepoliaFork;
     uint256 arbSepoliaFork;
 
+    uint256 constant SEND_VALUE = 1e5 ether;
+
     CCIPLocalSimulatorFork ccipLocalSimulatorFork;
 
     RebaseToken sepoliaRebaseToken;
@@ -37,7 +39,7 @@ contract CrossChain is Test {
     RebaseTokenPool sepoliaPool;
     RebaseTokenPool arbSepoliaPool;
 
-    function setup() external {
+    function setUp() external {
         sepoliaFork = vm.createSelectFork("eth");
         arbSepoliaFork = vm.createFork("arb");
 
@@ -184,5 +186,32 @@ contract CrossChain is Test {
         uint256 destBalance = IERC20(address(remoteToken)).balanceOf(alice);
         console.log("Remote balance after bridge: %d", destBalance);
         assertEq(destBalance, initialArbBalance + amountToBridge);
+    }
+
+    function testBridgeAllTokens() public {
+        
+        // We are working on the source chain (Sepolia)
+        vm.selectFork(sepoliaFork);
+        // Pretend a user is interacting with the protocol
+        // Give the user some ETH
+        vm.deal(alice, SEND_VALUE);
+        vm.startPrank(alice);
+        // Deposit to the vault and receive tokens
+        Vault(payable(address(vault))).deposit{value: SEND_VALUE}();
+        // bridge the tokens
+        console.log("Bridging %d tokens", SEND_VALUE);
+        uint256 startBalance = IERC20(address(sepoliaRebaseToken)).balanceOf(alice);
+        assertEq(startBalance, SEND_VALUE);
+        vm.stopPrank();
+        // bridge ALL TOKENS to the destination chain
+        bridgeTokens(
+            SEND_VALUE,
+            sepoliaFork,
+            arbSepoliaFork,
+            sepoliaNetworkDetails,
+            arbSepoliaNetworkDetails,
+            sepoliaRebaseToken,
+            arbSepoliaRebaseToken
+        );
     }
 }
