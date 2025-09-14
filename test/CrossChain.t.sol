@@ -7,8 +7,11 @@ import {RebaseTokenPool} from "../src/RebaseTokenPool.sol";
 import {IRebaseToken} from "../src/interfaces/IRebaseToken.sol";
 import {RebaseToken} from "../src/RebaseToken.sol";
 import {Vault} from "../src/Vault.sol";
-
+import {TokenPool} from "@ccip/contracts/src/v0.8/ccip/pools/TokenPool.sol";
+import {TokenAdminRegistry} from "@ccip/contracts/src/v0.8/ccip/tokenAdminRegistry/TokenAdminRegistry.sol";
+import {RegistryModuleOwnerCustom} from "@ccip/contracts/src/v0.8/ccip/tokenAdminRegistry/RegistryModuleOwnerCustom.sol";
 import {IERC20} from "@ccip/contracts/src/v0.8/vendor/openzeppelin-solidity/v4.8.3/contracts/token/ERC20/IERC20.sol";
+import {RateLimiter} from "@ccip/contracts/src/v0.8/ccip/libraries/RateLimiter.sol";
 
 contract CrossChain is Test {
     address owner = makeAddr("owner");
@@ -23,6 +26,10 @@ contract CrossChain is Test {
 
     Register.NetworkDetails sepoliaNetworkDetails;
     Register.NetworkDetails arbSepoliaNetworkDetails;
+    RegistryModuleOwnerCustom registryModuleOwnerCustomSepolia;
+    RegistryModuleOwnerCustom registryModuleOwnerCustomArbSepolia;
+    TokenAdminRegistry tokenAdminRegistrySepolia;
+    TokenAdminRegistry tokenAdminRegistryArbSepolia;
 
     RebaseTokenPool sepoliaPool;
     RebaseTokenPool arbSepoliaPool;
@@ -44,6 +51,15 @@ contract CrossChain is Test {
             sepoliaNetworkDetails.rmnProxyAddress,
             sepoliaNetworkDetails.routerAddress
         );
+        sepoliaRebaseToken.grantRoleMintAndBurn(address(sepoliaPool));
+        sepoliaRebaseToken.grantRoleMintAndBurn(address(vault));
+        registryModuleOwnerCustomSepolia =
+            RegistryModuleOwnerCustom(sepoliaNetworkDetails.registryModuleOwnerCustomAddress);
+        registryModuleOwnerCustomSepolia.registerAdminViaOwner(address(sepoliaRebaseToken));
+
+        tokenAdminRegistrySepolia = TokenAdminRegistry(sepoliaNetworkDetails.tokenAdminRegistryAddress);
+        tokenAdminRegistrySepolia.acceptAdminRole(address(sepoliaRebaseToken));
+        tokenAdminRegistrySepolia.setPool(address(sepoliaRebaseToken), address(sepoliaPool));
         vm.stopPrank();
 
         vm.selectFork(arbSepoliaFork);
@@ -56,6 +72,38 @@ contract CrossChain is Test {
             arbSepoliaNetworkDetails.rmnProxyAddress,
             arbSepoliaNetworkDetails.routerAddress
         );
+        arbSepoliaRebaseToken.grantRoleMintAndBurn(address(arbSepoliaPool));
+        registryModuleOwnerCustomArbSepolia =
+            RegistryModuleOwnerCustom(arbSepoliaNetworkDetails.registryModuleOwnerCustomAddress);
+        registryModuleOwnerCustomArbSepolia.registerAdminViaOwner(address(arbSepoliaRebaseToken));
+
+        tokenAdminRegistryArbSepolia = TokenAdminRegistry(arbSepoliaNetworkDetails.tokenAdminRegistryAddress);
+        tokenAdminRegistryArbSepolia.acceptAdminRole(address(arbSepoliaRebaseToken));
+        // Link token to pool in the token admin registry on Arbitrum
+        tokenAdminRegistryArbSepolia.setPool(address(arbSepoliaRebaseToken), address(arbSepoliaPool));
+        vm.stopPrank();
+    }
+
+    function configureTokenPool(
+        uint256 fork,
+        TokenPool localPool,
+        TokenPool remotePool,
+        IRebaseToken remoteToken,
+        Register.NetworkDetails memory remoteNetworkDetails
+    ) public {
+        vm.selectFork(fork);
+        vm.startPrank(owner);
+        TokenPool.ChainUpdate[] memory chains = new TokenPool.ChainUpdate[](1);
+        bytes memory remotePoolAddresses = abi.encode(address(remotePool));
+        chains[0] = TokenPool.ChainUpdate({
+            remoteChainSelector: remoteNetworkDetails.chainSelector,
+            allowed: true,
+            remotePoolAddress: remotePoolAddresses,
+            remoteTokenAddress: abi.encode(address(remoteToken)),
+            outboundRateLimiterConfig: RateLimiter.Config({isEnabled: false, capacity: 0, rate: 0}),
+            inboundRateLimiterConfig: RateLimiter.Config({isEnabled: false, capacity: 0, rate: 0})
+        });
+        localPool.applyChainUpdates(chains);
         vm.stopPrank();
     }
 }
