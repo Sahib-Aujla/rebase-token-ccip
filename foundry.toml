@@ -2,7 +2,7 @@
 src = "src"
 out = "out"
 libs = ["lib"]
-remappings=["@openzepplin/=lib/openzepplin-contracts/contracts/","@ccip/=lib/ccip/"]
+remappings=["@openzepplin/=lib/openzepplin-contracts/contracts/","@ccip/=lib/ccip/",'@chainlink-local/=lib/chainlink-local/']
 
 rpc_endpoints = { eth = "https://eth-sepolia.g.alchemy.com/v2/mwHkM74gwkO6kdWQKCYBRWdbDUnhZB7E", arb = "https://arb-sepolia.g.alchemy.com/v2/mwHkM74gwkO6kdWQKCYBRWdbDUnhZB7E", zksync = "https://sepolia.era.zksync.dev"}
 
