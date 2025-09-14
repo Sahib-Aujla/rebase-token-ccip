@@ -82,6 +82,20 @@ contract CrossChain is Test {
         // Link token to pool in the token admin registry on Arbitrum
         tokenAdminRegistryArbSepolia.setPool(address(arbSepoliaRebaseToken), address(arbSepoliaPool));
         vm.stopPrank();
+        configureTokenPool(
+            sepoliaFork,
+            sepoliaPool,
+            arbSepoliaPool,
+            IRebaseToken(address(arbSepoliaRebaseToken)),
+            arbSepoliaNetworkDetails
+        );
+        configureTokenPool(
+            arbSepoliaFork,
+            arbSepoliaPool,
+            sepoliaPool,
+            IRebaseToken(address(sepoliaRebaseToken)),
+            sepoliaNetworkDetails
+        );
     }
 
     function configureTokenPool(
